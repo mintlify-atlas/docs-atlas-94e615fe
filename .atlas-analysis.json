@@ -1,0 +1,92 @@
+{
+  "projectType": "general",
+  "projectName": "WiVRn",
+  "projectDescription": "WiVRn is a fully open-source PCVR streaming application that wirelessly streams VR games from a Linux PC to standalone Android VR headsets via OpenXR.",
+  "theme": "aspen",
+  "primaryColor": "#5c5c5c",
+  "lightColor": "#2e2e2e",
+  "darkColor": "#c1c1c1",
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Documentation",
+        "groups": [
+          {
+            "group": "Get Started",
+            "pages": [
+              "introduction",
+              "quickstart",
+              "supported-devices"
+            ]
+          },
+          {
+            "group": "Installation",
+            "pages": [
+              "installation/server",
+              "installation/headset-client",
+              "installation/building"
+            ]
+          },
+          {
+            "group": "Usage",
+            "pages": [
+              "usage/running",
+              "usage/steam-and-openvr",
+              "usage/audio",
+              "usage/wired-connection"
+            ]
+          },
+          {
+            "group": "Configuration",
+            "pages": [
+              "configuration/overview",
+              "configuration/encoder",
+              "configuration/network",
+              "configuration/advanced"
+            ]
+          },
+          {
+            "group": "Troubleshooting & Debugging",
+            "pages": [
+              "troubleshooting/common-issues",
+              "troubleshooting/logs",
+              "troubleshooting/performance",
+              "troubleshooting/debugging"
+            ]
+          },
+          {
+            "group": "Contributing",
+            "pages": [
+              "contributing/translating",
+              "contributing/development"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "keyFeatures": [
+    "Wireless VR streaming from Linux PC to standalone Android headsets",
+    "OpenXR runtime with support for Quest, Pico, HTC Vive, and Samsung XR headsets",
+    "Hardware video encoding via NVENC (Nvidia), VAAPI (AMD/Intel), Vulkan Video, and software x264",
+    "Multi-codec support: H.264, H.265 (HEVC), AV1",
+    "Qt6 dashboard GUI with setup wizard and headset management",
+    "OpenVR/Steam game compatibility via xrizer and OpenComposite",
+    "mDNS/Avahi-based automatic server discovery on local network",
+    "Audio streaming with virtual PipeWire/PulseAudio devices",
+    "SteamVR Lighthouse tracked device support",
+    "HID input forwarding (keyboard/mouse from headset to PC)"
+  ],
+  "publicApiSurface": [
+    "wivrn-dashboard — graphical dashboard and server manager",
+    "wivrn-server — OpenXR streaming server process",
+    "wivrnctl — command-line control utility",
+    "config.json — JSON configuration file (encoder, codec, application, tcp-only, port, hostname, etc.)",
+    "OpenXR runtime manifest: openxr_wivrn.json",
+    "WIVRN_DUMP_VIDEO env var — dump video frames for analysis",
+    "WIVRN_DUMP_TIMINGS env var — dump timing CSV",
+    "XRT_LOG / XRT_COMPOSITOR_LOG env vars — log level control",
+    "wivrn:// URI scheme — deep-link connection from headset",
+    "ADB reverse tunnel: adb reverse tcp:9757 tcp:9757"
+  ]
+}

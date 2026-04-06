@@ -1,0 +1,27 @@
+---
+title: "Audio"
+description: "How to configure audio output and microphone input when streaming with WiVRn."
+---
+
+## Audio output
+
+When your headset connects, WiVRn creates a virtual audio output device named **WiVRn**. You must manually set this device as the default audio output so that game audio is streamed to your headset.
+
+In `pavucontrol`, the WiVRn device appears under the **Output Devices** tab as a virtual device.
+
+<Note>
+  PipeWire is the default audio backend. PulseAudio is also supported.
+</Note>
+
+## Microphone input
+
+To use the headset microphone on your PC:
+
+<Steps>
+  <Step title="Enable the microphone on the headset">
+    In the WiVRn app on your headset, open the **Settings** tab and enable the microphone. Grant the permission when prompted.
+  </Step>
+  <Step title="Select the input device on your PC">
+    A virtual input device named **WiVRn(microphone)** will appear in your system audio settings. Set it as the default input device, the same way you set the output device.
+  </Step>
+</Steps>

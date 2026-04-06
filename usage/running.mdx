@@ -1,0 +1,86 @@
+---
+title: "Running WiVRn"
+description: "How to start the WiVRn server, connect your headset, and launch VR applications."
+---
+
+## Prerequisites
+
+Avahi must be running for your headset to discover the server on the network:
+
+```bash
+systemctl enable --now avahi-daemon
+```
+
+If you have a firewall, open the following ports:
+
+| Port | Protocol | Purpose |
+|------|----------|---------|
+| 5353 | UDP | Avahi (mDNS discovery) |
+| 9757 | UDP + TCP | WiVRn streaming |
+
+For example, with UFW:
+
+```bash
+ufw allow 5353/udp
+ufw allow 9757
+```
+
+## Starting the server
+
+Run the **WiVRn** application from your desktop environment, or launch it from the terminal:
+
+```bash
+wivrn-dashboard
+```
+
+The first time you launch, a setup wizard will guide you through initial configuration.
+
+## Connecting your headset
+
+<Steps>
+  <Step title="Open the WiVRn app on your headset">
+    Find WiVRn in the App Library on your headset. If you installed it from an APK rather than the Meta Store on a Meta Quest, look in the **Unknown sources** section.
+  </Step>
+  <Step title="Select your computer">
+    Your computer should appear in the server list. Tap **Connect**.
+  </Step>
+  <Step title="Wait for the ready state">
+    The headset screen will display:
+
+    > Connection ready. Start a VR application on [your computer's name].
+  </Step>
+</Steps>
+
+<Note>
+  The WiVRn server and headset client must be on the same version.
+</Note>
+
+## Launching VR games
+
+Once connected, start any OpenXR application on your PC. It will stream directly to your headset.
+
+### Steam games
+
+Some Steam games require a launch option to use WiVRn as the OpenXR runtime. The dashboard will display the exact string to enter when needed.
+
+<Steps>
+  <Step title="Open game properties">
+    Right-click the game in your Steam library and select **Properties**.
+  </Step>
+  <Step title="Set launch options">
+    In the **General** tab, paste the launch options shown by the WiVRn dashboard into the **Launch Options** field.
+  </Step>
+</Steps>
+
+## Application list in the headset
+
+When the headset is connected but no XR application is running, the headset shows an application launcher. Applications appear in this list from two sources:
+
+- **Steam games** flagged as VR. Restart Steam after installing new VR games for the list to update.
+- **.desktop files** that include `X-WiVRn-VR` in their `Categories` field. WiVRn searches the standard locations:
+  - `~/.local/share/applications/`
+  - `/usr/share/applications/`
+
+## Auto-starting an application
+
+You can configure an application to launch automatically whenever your headset connects. Set this from the dashboard settings, or configure it [manually in the config file](/configuration/advanced#application).

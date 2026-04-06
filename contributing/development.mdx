@@ -1,0 +1,139 @@
+---
+title: 'Development'
+description: 'Set up a development environment and contribute code to WiVRn.'
+---
+
+WiVRn is licensed under the [GPL-3.0](https://www.gnu.org/licenses/gpl-3.0). Contributions are welcome via pull requests on GitHub.
+
+## Prerequisites
+
+Before building WiVRn for development, make sure you have the following installed:
+
+| Requirement | Version |
+|-------------|---------|
+| C++ compiler (GCC or Clang) | C++23 support required |
+| CMake | 3.28 or newer |
+| Ninja | Any recent version |
+| Vulkan SDK | 1.3.261 or newer (1.3.283+ for Vulkan video encode) |
+| Qt6 | Required for the dashboard |
+| gettext | Required for client and dashboard builds |
+
+Key library dependencies include Avahi, Boost (Locale, PFR), FreeType, HarfBuzz, spdlog, OpenSSL, Eigen3, nlohmann\_json, librsvg, and libnotify. Encoder support depends on optional libraries: FFmpeg/libav (VAAPI for AMD/Intel), x264 (software encoding), and NVENC (NVIDIA). Audio backends use PipeWire (default) or PulseAudio.
+
+The server also fetches [Monado](https://monado.freedesktop.org/) as a dependency via CMake's `FetchContent`.
+
+## Project structure
+
+```
+WiVRn/
+├── client/      # Android headset client
+├── server/      # PC server components
+├── dashboard/   # Qt6 GUI dashboard
+├── common/      # Shared code between client and server
+├── cmake/       # CMake modules
+├── docs/        # Documentation
+├── locale/      # Translation files
+├── tools/       # Utility scripts (e.g. update_messages.sh)
+└── patches/     # Patches applied to vendored dependencies
+```
+
+## Building for development
+
+Use `Debug` or `RelWithDebInfo` as your build type to retain debug symbols.
+
+### Server and dashboard
+
+```bash
+cmake -B build . -GNinja \
+  -DWIVRN_BUILD_CLIENT=OFF \
+  -DWIVRN_BUILD_SERVER=ON \
+  -DWIVRN_BUILD_DASHBOARD=ON \
+  -DCMAKE_BUILD_TYPE=RelWithDebInfo
+
+cmake --build build
+```
+
+### Useful development flags
+
+| CMake option | Default | Description |
+|---|---|---|
+| `WIVRN_CLIENT_DEBUG_MENU` | `OFF` | Enable the debug menu in the headset client |
+| `WIVRN_SHOW_IMGUI_DEMO_WINDOW` | `OFF` | Show the Dear ImGui demo window in the client |
+| `WIVRN_FEATURE_DEBUG_GUI` | `OFF` | Enable the Monado debug GUI |
+| `WIVRN_WERROR` | `OFF` | Treat compiler warnings as errors |
+| `WIVRN_BUILD_TEST` | `OFF` | Build test binaries |
+| `WIVRN_DEBUG_SHADERS` | `OFF` | Compile shaders with debug information |
+
+For example, to enable the client debug menu:
+
+```bash
+cmake -B build . -GNinja \
+  -DWIVRN_BUILD_CLIENT=OFF \
+  -DWIVRN_BUILD_SERVER=ON \
+  -DWIVRN_BUILD_DASHBOARD=ON \
+  -DCMAKE_BUILD_TYPE=Debug \
+  -DWIVRN_CLIENT_DEBUG_MENU=ON \
+  -DWIVRN_FEATURE_DEBUG_GUI=ON
+```
+
+### Disabling specific encoders
+
+You can disable individual encoder backends to speed up builds or test fallback paths:
+
+```bash
+-DWIVRN_USE_NVENC=OFF       # Disable NVIDIA hardware encoder
+-DWIVRN_USE_VAAPI=OFF       # Disable AMD/Intel VAAPI encoder
+-DWIVRN_USE_VULKAN_ENCODE=OFF  # Disable Vulkan video encoder
+-DWIVRN_USE_X264=OFF        # Disable x264 software encoder
+```
+
+<Warning>
+  At least one encoder must remain enabled. The build will fail if all encoder options are set to `OFF`.
+</Warning>
+
+## Code style
+
+WiVRn uses `clang-format` for C/C++ code formatting. The style is defined in `.clang-format` at the root of the repository and is based on LLVM style with 8-space tab indentation.
+
+Format your changes before submitting:
+
+```bash
+clang-format -i <file>
+```
+
+The CI runs a formatting check (`Format` workflow) against the `client/`, `server/`, `dashboard/`, and `common/` directories on every push and pull request.
+
+## How to contribute
+
+<Steps>
+  <Step title="Fork the repository">
+    Fork [WiVRn/WiVRn](https://github.com/WiVRn/WiVRn) on GitHub and clone your fork locally.
+  </Step>
+
+  <Step title="Create a feature branch">
+    ```bash
+    git checkout -b my-feature
+    ```
+  </Step>
+
+  <Step title="Make your changes">
+    Write your code, format it with `clang-format`, and make sure the build succeeds before submitting.
+  </Step>
+
+  <Step title="Submit a pull request">
+    Push your branch and open a pull request against the `master` branch of the upstream repository.
+  </Step>
+</Steps>
+
+## Community channels
+
+Join the community to ask questions, discuss development, or get help:
+
+<CardGroup cols={2}>
+  <Card title="Discord" icon="discord" href="https://discord.gg/EHAYe3tTYa">
+    Linux VR Adventures Discord server. Use the `#wivrn` channel for WiVRn-specific discussion.
+  </Card>
+  <Card title="Matrix" icon="message-circle" href="https://matrix.to/#/#linux-vr-adventures:matrix.org">
+    `#linux-vr-adventures:matrix.org` — the Matrix space for Linux VR, including a WiVRn room.
+  </Card>
+</CardGroup>

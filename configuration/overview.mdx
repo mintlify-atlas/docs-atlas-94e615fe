@@ -1,0 +1,54 @@
+---
+title: "Configuration overview"
+description: "How WiVRn is configured on the server side, where config files live, and how to get started with a minimal setup."
+---
+
+WiVRn is configured on the **server side** (the Linux PC running the stream). The easiest way to configure WiVRn is through the **dashboard GUI**, which writes settings on your behalf. For advanced use cases, or when running headless, you can edit the JSON config files directly.
+
+## Dashboard
+
+The WiVRn dashboard (`wivrn-dashboard`) provides a graphical interface for all common settings. Changes made in the dashboard are saved to your user config file automatically.
+
+## Manual configuration
+
+WiVRn reads config from multiple locations. **Files later in the list override top-level values from earlier ones**, so user-level config takes precedence over system-wide defaults.
+
+| Location | Purpose |
+|---|---|
+| `/usr/share/wivrn/config.json` | System defaults (set at install time via `CMAKE_INSTALL_PREFIX`) |
+| `/etc/wivrn/config.json` | System-wide administrator config |
+| `$XDG_CONFIG_HOME/wivrn/config.json` | User config (falls back to `~/.config/wivrn/config.json`) |
+
+<Note>
+  If you installed WiVRn from Flatpak, the user config path is:
+  `$HOME/.var/app/io.github.wivrn.wivrn/config/wivrn/config.json`
+</Note>
+
+All config keys are optional. WiVRn picks sensible defaults for everything not explicitly set, so you only need to include the values you want to change.
+
+## Minimal example
+
+The following is a complete, valid config file. It explicitly selects hardware encoding with H.265 and leaves everything else at its default.
+
+```json
+{
+  "encoder": {
+    "encoder": "vaapi",
+    "codec": "h265"
+  }
+}
+```
+
+## Configuration sections
+
+<CardGroup cols={3}>
+  <Card title="Encoder" icon="video" href="/configuration/encoder">
+    Choose your encoder backend, codec, bit depth, and per-eye stream layout.
+  </Card>
+  <Card title="Network" icon="wifi" href="/configuration/network">
+    Configure ports, TCP/UDP mode, and service discovery.
+  </Card>
+  <Card title="Advanced" icon="sliders" href="/configuration/advanced">
+    Auto-launch applications, HID forwarding, OpenVR compatibility, and debug options.
+  </Card>
+</CardGroup>

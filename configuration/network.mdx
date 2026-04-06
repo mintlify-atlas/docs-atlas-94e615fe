@@ -1,0 +1,97 @@
+---
+title: "Network configuration"
+description: "Configure ports, transport protocol, and service discovery for WiVRn."
+---
+
+WiVRn uses both TCP and UDP for streaming by default. TCP handles reliable delivery of control messages; UDP carries low-latency video and audio data. Service discovery is handled via Avahi (mDNS/DNS-SD), so your headset can find the server automatically on the local network.
+
+## Options
+
+<ParamField path="tcp-only" type="boolean" default="false">
+  When set to `true`, WiVRn uses TCP exclusively for all communications. This disables UDP.
+
+  TCP-only mode may increase latency because TCP adds retransmission and ordering overhead. Use this only if your network has unreliable UDP delivery — for example, on some managed Wi-Fi networks or when routing through a VPN.
+
+  ```json
+  {
+    "tcp-only": true
+  }
+  ```
+</ParamField>
+
+<ParamField path="publish-service" type="string or null" default='"avahi"'>
+  Controls how WiVRn advertises itself on the local network so headsets can discover it automatically.
+
+  | Value | Behavior |
+  |---|---|
+  | `"avahi"` | Publish via Avahi (mDNS/DNS-SD). Headsets discover the server automatically. |
+  | `null` | Do not publish. Users must enter the server's IP address manually on the headset. |
+
+  ```json
+  {
+    "publish-service": null
+  }
+  ```
+
+  <Note>
+    Setting `publish-service` to `null` is useful in environments where mDNS traffic is blocked or you want to prevent automatic discovery.
+  </Note>
+</ParamField>
+
+<ParamField path="port" type="number" default="9757">
+  The TCP and UDP port used for the WiVRn connection. Both protocols use the same port number.
+
+  Change this if port 9757 conflicts with another service, or if your network enforces specific port restrictions.
+
+  ```json
+  {
+    "port": 9757
+  }
+  ```
+</ParamField>
+
+<ParamField path="hostname" type="string">
+  Overrides the server name displayed in the headset's server list. When unset, WiVRn uses the system hostname.
+
+  ```json
+  {
+    "hostname": "My VR PC"
+  }
+  ```
+</ParamField>
+
+## Firewall configuration
+
+WiVRn requires the following ports to be open on the server's firewall:
+
+| Port | Protocol | Purpose |
+|---|---|---|
+| `5353` | UDP | Avahi/mDNS service discovery |
+| `9757` | TCP + UDP | WiVRn streaming connection |
+
+### UFW example
+
+```bash
+ufw allow 5353/udp
+ufw allow 9757
+```
+
+`ufw allow 9757` opens both TCP and UDP for that port. If you changed the port with the `port` config option, adjust the command accordingly.
+
+<Warning>
+  If port 5353/UDP is blocked, the headset will not be able to auto-discover the server. You will need to set `publish-service` to `null` and enter the server IP manually on the headset, or configure your firewall to allow mDNS traffic.
+</Warning>
+
+## How mDNS/Avahi discovery works
+
+When `publish-service` is set to `"avahi"` (the default), WiVRn registers a DNS-SD service record via the Avahi daemon. The headset scans for WiVRn service records on the local subnet and shows any servers it finds in the connection list — no IP addresses or manual setup required.
+
+For this to work:
+
+- The Avahi daemon (`avahi-daemon`) must be running on the server.
+- Both the server and headset must be on the same local network segment.
+- mDNS traffic (port 5353/UDP, multicast) must not be blocked between them.
+
+<Tip>
+  Most home routers pass mDNS traffic transparently. If you are on a corporate or managed network, mDNS may be filtered between subnets — in that case, configure `publish-service: null` and connect by IP.
+</Tip>

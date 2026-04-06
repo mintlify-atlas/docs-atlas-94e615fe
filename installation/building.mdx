@@ -1,0 +1,166 @@
+---
+title: 'Building from source'
+description: 'Compile the WiVRn server, dashboard, and headset client from source.'
+---
+
+You can build WiVRn from source if a package is not available for your distribution, or if you want to make changes to the code. The server and client are built separately.
+
+## Server
+
+### Build
+
+From your checkout directory, run the following commands. CMake will automatically detect available encoders.
+
+```bash
+cmake -B build-server . -GNinja -DWIVRN_BUILD_CLIENT=OFF -DCMAKE_BUILD_TYPE=RelWithDebInfo
+cmake --build build-server
+```
+
+### CMake options
+
+You can pass additional options to the `cmake` configuration command to control which encoders and backends are compiled in.
+
+**Video encoders**
+
+All encoders are enabled by default when their dependencies are detected. Pass `=OFF` to disable one.
+
+| Option | Description |
+|---|---|
+| `WIVRN_USE_NVENC` | NVIDIA hardware encoder (NVENC) |
+| `WIVRN_USE_VAAPI` | AMD/Intel hardware encoder (VAAPI via FFmpeg) |
+| `WIVRN_USE_VULKAN_ENCODE` | Vulkan video encoder (requires Vulkan 1.3.283+) |
+| `WIVRN_USE_X264` | x264 software encoder |
+
+<Note>
+  At least one encoder must be enabled. The build will fail if all encoders are disabled.
+</Note>
+
+**Audio backends**
+
+| Option | Default | Description |
+|---|---|---|
+| `WIVRN_USE_PIPEWIRE` | `ON` | PipeWire audio backend |
+| `WIVRN_USE_PULSEAUDIO` | `OFF` | PulseAudio audio backend |
+
+**Other options**
+
+| Option | Description |
+|---|---|
+| `WIVRN_USE_SYSTEMD` | Enable systemd service and pretty hostname support |
+| `WIVRN_FEATURE_STEAMVR_LIGHTHOUSE` | Enable SteamVR Lighthouse driver for lighthouse-tracked devices |
+
+**Example:** disable NVENC and enable PulseAudio:
+
+```bash
+cmake -B build-server . -GNinja \
+  -DWIVRN_BUILD_CLIENT=OFF \
+  -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+  -DWIVRN_USE_NVENC=OFF \
+  -DWIVRN_USE_PULSEAUDIO=ON
+```
+
+## Dashboard
+
+The WiVRn dashboard requires Qt6. The build command below compiles both the server and the dashboard together.
+
+```bash
+cmake -B build-dashboard . -GNinja \
+  -DWIVRN_BUILD_CLIENT=OFF \
+  -DWIVRN_BUILD_SERVER=ON \
+  -DWIVRN_BUILD_DASHBOARD=ON \
+  -DCMAKE_BUILD_TYPE=RelWithDebInfo
+cmake --build build-dashboard
+```
+
+All server CMake options described above apply to the dashboard build as well.
+
+## Headset client (Android APK)
+
+Building the headset client requires an Android development environment in addition to the standard build tools.
+
+### Build dependencies
+
+Install the following dependencies (Arch package names shown):
+
+```
+git pkgconf glslang cmake jdk17-openjdk librsvg cli11 ktx_software-git
+```
+
+The `ktx_software-git` package is available from the [AUR](https://aur.archlinux.org/packages/ktx_software-git).
+
+OpenSSL build dependencies are also required, including perl 5. See the [OpenSSL install prerequisites](https://github.com/openssl/openssl/blob/master/INSTALL.md#prerequisites) for details.
+
+### Set up the Android SDK
+
+<Steps>
+  <Step title="Download sdkmanager">
+    Download the [Android sdkmanager](https://developer.android.com/tools/sdkmanager) command-line tool and extract it to any directory.
+  </Step>
+  <Step title="Create your ANDROID_HOME directory">
+    ```bash
+    mkdir -p ~/Android
+    ```
+  </Step>
+  <Step title="Accept SDK licenses">
+    ```bash
+    sdkmanager --sdk_root="${HOME}/Android" --licenses
+    ```
+  </Step>
+  <Step title="Install the required CMake version">
+    ```bash
+    sdkmanager --install "cmake;3.31.5"
+    ```
+  </Step>
+</Steps>
+
+### Sign the APK
+
+Your device may refuse to install an unsigned APK. Generate a signing key before building:
+
+```bash
+# Create the keystore — enter a password and fill in the requested information
+keytool -genkey -v -keystore ks.keystore -alias default_key -keyalg RSA -keysize 2048 -validity 10000
+
+# Save the password for use at build time (replace YOUR_PASSWORD with your actual password)
+echo signingKeyPassword="YOUR_PASSWORD" > gradle.properties
+```
+
+Once the keystore is created, the APK will be signed automatically during the build.
+
+### Build the APK
+
+```bash
+export ANDROID_HOME=~/Android
+export JAVA_HOME=/usr/lib/jvm/java-17-openjdk/
+
+./gradlew assembleRelease
+```
+
+The output APK is written to `build/outputs/apk/release/WiVRn-release.apk`.
+
+### Install with ADB
+
+<Steps>
+  <Step title="Enable USB debugging on your headset">
+    - **Pico:** Follow the [Pico developer setup guide](https://developer.picoxr.com/document/unity-openxr/set-up-the-development-environment/) (first step).
+    - **Quest:** Follow the [Meta headset setup guide](https://developer.oculus.com/documentation/unity/unity-env-device-setup/#headset-setup) through step 4.
+
+    Also add your device to udev rules: [ArchWiki — Android Debug Bridge: Adding udev rules](https://wiki.archlinux.org/title/Android_Debug_Bridge#Adding_udev_rules).
+  </Step>
+  <Step title="Connect the headset via USB and verify the connection">
+    ```bash
+    adb start-server
+    adb devices
+    ```
+  </Step>
+  <Step title="Install the APK">
+    ```bash
+    adb install build/outputs/apk/release/WiVRn-release.apk
+    ```
+  </Step>
+  <Step title="Stop the ADB server when done">
+    ```bash
+    adb kill-server
+    ```
+  </Step>
+</Steps>

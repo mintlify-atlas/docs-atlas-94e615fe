@@ -1,97 +1,82 @@
 ---
-title: "Introduction"
-description: "Welcome to the new home for your documentation"
+title: "WiVRn — Wireless VR Streaming for Linux"
+description: "Stream your Linux PC's VR games wirelessly to any standalone Android VR headset. Free, open-source, and built on OpenXR."
 ---
 
-## Setting up
+WiVRn lets you play PC VR games on your standalone headset — wirelessly, over your local network — directly from a Linux computer. No proprietary runtimes required. Just install, connect, and play.
 
-Get your documentation site up and running in minutes.
-
-<Card
-  title="Start here"
-  icon="rocket"
-  href="/quickstart"
-  horizontal
->
-  Follow our three step quickstart guide.
-</Card>
-
-## Make it yours
-
-Design a docs site that looks great and empowers your users.
-
-<Columns cols={2}>
-  <Card
-    title="Edit locally"
-    icon="pen-to-square"
-    href="/development"
-  >
-    Edit your docs locally and preview them in real time.
+<CardGroup cols={2}>
+  <Card title="Quick Start" icon="rocket" href="/quickstart">
+    Get streaming in minutes. Install the server, set up your headset, and launch your first VR game.
   </Card>
-  <Card
-    title="Customize your site"
-    icon="palette"
-    href="/essentials/settings"
-  >
-    Customize the design and colors of your site to match your brand.
+  <Card title="Supported Devices" icon="headset" href="/supported-devices">
+    See which VR headsets are compatible with WiVRn, including Meta Quest, Pico, and HTC Vive.
   </Card>
-    <Card
-    title="Set up navigation"
-    icon="map"
-    href="/essentials/navigation"
-  >
-    Organize your docs to help users find what they need and succeed with your product.
+  <Card title="Installation" icon="download" href="/installation/server">
+    Install the WiVRn server on your Linux PC using native packages, Flatpak, or build from source.
   </Card>
-  <Card
-    title="API documentation"
-    icon="terminal"
-    href="/api-reference/introduction"
-  >
-    Auto-generate API documentation from OpenAPI specifications.
+  <Card title="Configuration" icon="sliders" href="/configuration/overview">
+    Configure encoders, codecs, networking, and auto-launch settings to suit your setup.
   </Card>
-</Columns>
+</CardGroup>
 
-## Create beautiful pages
+## How WiVRn works
 
-Everything you need to create world-class documentation.
+WiVRn runs as an OpenXR runtime on your Linux PC. When your headset connects, it streams the rendered VR frames over your local network in real time — encoded using your GPU's hardware encoder for low latency and high quality.
 
-<Columns cols={2}>
-  <Card
-    title="Write with MDX"
-    icon="pen-fancy"
-    href="/essentials/markdown"
-  >
-    Use MDX to style your docs pages.
-  </Card>
-  <Card
-    title="Code samples"
-    icon="code"
-    href="/essentials/code"
-  >
-    Add sample code to demonstrate how to use your product.
-  </Card>
-  <Card
-    title="Images"
-    icon="image"
-    href="/essentials/images"
-  >
-    Display images and other media.
-  </Card>
-  <Card
-    title="Reusable snippets"
-    icon="recycle"
-    href="/essentials/reusable-snippets"
-  >
-    Write once and reuse across your docs.
-  </Card>
-</Columns>
+<Steps>
+  <Step title="Install the WiVRn server on your Linux PC">
+    Available via native distro packages (Arch, Fedora, Gentoo, NixOS) or as a Flatpak on Flathub.
+  </Step>
+  <Step title="Install the WiVRn app on your headset">
+    Available on the Meta Store for Quest headsets, or download the APK for Pico, HTC Vive, and others.
+  </Step>
+  <Step title="Connect your headset to your PC">
+    Open WiVRn on your headset. Your PC will appear in the server list — tap to connect.
+  </Step>
+  <Step title="Launch a VR game on your PC">
+    Start any OpenXR game. For Steam games using OpenVR, WiVRn automatically configures the compatibility layer.
+  </Step>
+</Steps>
 
-## Need inspiration?
+## Key features
 
-<Card
-  title="See complete examples"
-  icon="stars"
-  href="https://mintlify.com/customers"
->
-  Browse our showcase of exceptional documentation sites.
-</Card>
+<CardGroup cols={2}>
+  <Card title="Hardware video encoding" icon="microchip">
+    Uses NVENC (Nvidia), VAAPI (AMD/Intel), or Vulkan Video for low-latency GPU-accelerated encoding. Software x264 is available as a fallback.
+  </Card>
+  <Card title="Multi-codec support" icon="film">
+    Stream using H.264, H.265 (HEVC), or AV1 — automatically negotiated between your PC and headset.
+  </Card>
+  <Card title="Steam & OpenVR compatibility" icon="gamepad-modern">
+    Play Steam games that use OpenVR via xrizer or OpenComposite, which translate OpenVR calls to OpenXR transparently.
+  </Card>
+  <Card title="Automatic server discovery" icon="wifi">
+    Your headset finds your PC automatically on the local network using mDNS/Avahi — no IP addresses to configure.
+  </Card>
+  <Card title="Audio streaming" icon="volume">
+    WiVRn creates a virtual audio device on your PC. Headset audio and microphone both stream over the connection.
+  </Card>
+  <Card title="Dashboard GUI" icon="desktop">
+    A Qt6 graphical dashboard handles setup, headset management, and server configuration — no command line required for day-to-day use.
+  </Card>
+</CardGroup>
+
+## Community & support
+
+WiVRn is developed in the open. If you run into issues or want to connect with other users and contributors:
+
+<CardGroup cols={2}>
+  <Card title="Discord" icon="discord" href="https://discord.gg/EHAYe3tTYa">
+    Join the LVRA Discord and find the `#wivrn` channel for help and discussion.
+  </Card>
+  <Card title="Matrix" icon="matrix" href="https://matrix.to/#/#linux-vr-adventures:matrix.org">
+    Join the Linux VR Adventures Matrix space. Use the `wivrn` room for WiVRn-specific topics.
+  </Card>
+  <Card title="GitHub Issues" icon="github" href="https://github.com/WiVRn/WiVRn/issues">
+    Report bugs or request features directly on the GitHub issue tracker.
+  </Card>
+  <Card title="Troubleshooting" icon="wrench" href="/troubleshooting/common-issues">
+    Common connection and performance issues with step-by-step solutions.
+  </Card>
+</CardGroup>

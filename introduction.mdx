@@ -1,0 +1,109 @@
+---
+title: "Introduction"
+description: "WiVRn is a fully open-source PCVR streaming application that wirelessly streams VR games from a Linux PC to standalone Android VR headsets via OpenXR."
+---
+
+WiVRn lets you play PC VR games on your standalone headset — wirelessly, over your local network — directly from a Linux computer. No proprietary runtimes required.
+
+## What WiVRn is
+
+WiVRn is a PCVR streaming solution with two components that work together:
+
+- **WiVRn server** — runs on your Linux PC and acts as an OpenXR runtime, capturing and encoding VR frames, then streaming them over the network.
+- **WiVRn headset app** — runs on your standalone Android VR headset, receives the stream, decodes it, and renders it locally.
+
+A **dashboard GUI** (built with Qt6) ties the two together: it handles first-time setup, installs the headset app, and manages server configuration — with no command line required for day-to-day use.
+
+## Architecture overview
+
+```
+┌─────────────────────────────────┐         ┌──────────────────────────┐
+│           Linux PC              │         │     Android VR Headset   │
+│                                 │         │                          │
+│  VR Game (OpenXR / OpenVR)      │         │   WiVRn App              │
+│       ↓                         │         │     ↓                    │
+│  wivrn-server (OpenXR runtime)  │  WiFi   │   Decode (hardware)      │
+│  ↓  Encode (GPU hardware)       │ ──────► │   Render to display      │
+│  ↓  Stream over TCP/UDP:9757    │         │   Send tracking data ◄── │
+│                                 │         │                          │
+│  wivrn-dashboard (Qt6 GUI)      │         │                          │
+└─────────────────────────────────┘         └──────────────────────────┘
+```
+
+### PC server
+
+`wivrn-server` runs as an OpenXR runtime on the Linux PC. VR games and applications talk to it through the standard OpenXR API — the same way they would talk to a locally-connected headset. The server captures each rendered frame, encodes it using the GPU's hardware encoder, and sends it to the headset over the local network.
+
+For Steam games that use the older OpenVR API (rather than OpenXR), WiVRn uses a compatibility layer — either [xrizer](https://github.com/Supreeeme/xrizer) or [OpenComposite](https://gitlab.com/znixian/OpenOVR/) — to translate OpenVR calls to OpenXR transparently.
+
+### Headset client
+
+The WiVRn app runs on the Android VR headset. It receives the encoded video stream, decodes it using the headset's hardware decoder, and renders the frames to the display. It simultaneously sends head tracking and controller input data back to the PC in real time.
+
+### Dashboard
+
+The dashboard (`wivrn-dashboard`) is a graphical application that runs alongside the server on the Linux PC. It guides you through first-time setup (including headset app installation), shows connected headsets, and lets you manage server settings without editing configuration files manually.
+
+## How network streaming works
+
+WiVRn uses two mechanisms to connect the PC and headset:
+
+**Service discovery via mDNS (Avahi)**
+
+When the server starts, it advertises itself on the local network using [Avahi](https://www.avahi.org/) (mDNS). The headset app automatically discovers the PC without needing a manual IP address. Port 5353/UDP must be open in your firewall for mDNS to work.
+
+**Streaming over TCP and UDP on port 9757**
+
+Once discovered, the headset connects to the PC on port 9757. WiVRn uses both TCP and UDP on this port by default:
+
+- **UDP** carries the low-latency video stream and tracking data.
+- **TCP** carries reliable control messages.
+
+You can force TCP-only mode in the configuration if your network has issues with UDP, at the cost of higher latency. Port 9757 (both TCP and UDP) must be open in your firewall.
+
+## Key technologies
+
+| Technology | Role |
+|---|---|
+| [OpenXR](https://www.khronos.org/openxr/) | Standard API that VR games use; WiVRn implements this runtime on Linux |
+| [Monado](https://monado.freedesktop.org/) | Open-source OpenXR runtime that WiVRn is built on top of |
+| [Avahi](https://www.avahi.org/) | mDNS daemon used for automatic server discovery on the local network |
+| NVENC | Nvidia hardware video encoder for low-latency encoding |
+| VAAPI | AMD and Intel hardware video encoder via FFmpeg |
+| Vulkan Video | Experimental hardware encoding path available on any Vulkan-capable GPU |
+| x264 | Software encoder used as a fallback when no hardware encoder is available |
+| xrizer / OpenComposite | Translates OpenVR API calls to OpenXR for Steam game compatibility |
+
+## Supported codecs
+
+WiVRn encodes each eye's video stream independently. The codec is automatically negotiated between the server and headset based on what both support:
+
+| Codec | Encoders |
+|---|---|
+| H.264 | x264, nvenc, vaapi, vulkan |
+| H.265 (HEVC) | nvenc, vaapi, vulkan |
+| AV1 | nvenc, vaapi |
+
+WiVRn defaults to the best codec supported by both sides — typically AV1 or H.265 where available.
+
+## Audio
+
+When a headset connects, WiVRn creates a virtual audio output device on the PC named **WiVRn**. You set this as the default audio output in your system audio settings (for example, in `pavucontrol`). Microphone input from the headset is also supported and appears as a virtual input device named **WiVRn(microphone)**.
+
+## What WiVRn is not
+
+- WiVRn does not run on Windows or macOS — the server requires Linux.
+- WiVRn does not support non-Android VR headsets (for example, PlayStation VR).
+- WiVRn does not support non-VR Android devices.
+- The Linux headset client exists only for debugging; it has no audio or hardware decoding.
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card title="Quick start" icon="rocket" href="/quickstart">
+    Install the server, set up your headset, and start streaming in minutes.
+  </Card>
+  <Card title="Supported devices" icon="headset" href="/supported-devices">
+    Check whether your VR headset is compatible with WiVRn.
+  </Card>
+</CardGroup>

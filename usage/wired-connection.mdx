@@ -1,0 +1,58 @@
+---
+title: "Wired connection"
+description: "How to connect your headset to WiVRn over USB for debugging or when WiFi performance is insufficient."
+---
+
+A wired USB connection is useful when:
+
+- Diagnosing network or connectivity issues
+- Your WiFi signal quality is poor
+- You want the lowest possible latency
+
+<Tip>
+  You can also initiate a wired connection directly from the WiVRn dashboard without running any ADB commands manually.
+</Tip>
+
+## Prerequisites
+
+- ADB installed on your PC
+- A USB data cable connecting your headset to your PC
+- The WiVRn server running on your PC
+- The WiVRn app installed on your headset
+
+Developer mode may need to be enabled on your headset before ADB will work:
+
+- **Pico headsets**: follow the instructions at [developer.picoxr.com](https://developer.picoxr.com)
+- **Meta Quest headsets**: follow the instructions at [developer.oculus.com](https://developer.oculus.com)
+
+## Connecting via USB
+
+<Steps>
+  <Step title="Forward the WiVRn port over USB">
+    ```bash
+    adb reverse tcp:9757 tcp:9757
+    ```
+  </Step>
+  <Step title="Launch the WiVRn app on the headset and point it at the local connection">
+    ```bash
+    adb shell am start -a android.intent.action.VIEW -d "wivrn+tcp://localhost" org.meumeu.wivrn
+    ```
+
+    Replace `org.meumeu.wivrn` with the package name that matches how you installed the app:
+
+    | Install source | Package name |
+    |----------------|--------------|
+    | Meta Store | `org.meumeu.wivrn` |
+    | GitHub releases | `org.meumeu.wivrn.github` |
+    | GitHub nightlies | `org.meumeu.wivrn.github.nightly` |
+    | GitHub CI builds | `org.meumeu.wivrn.github.testing` |
+    | Developer builds | `org.meumeu.wivrn.local` |
+  </Step>
+  <Step title="Complete the pairing process on the headset">
+    After running the ADB commands, continue with the normal pairing steps in the headset app.
+  </Step>
+</Steps>
+
+<Warning>
+  When using a wired connection, switch off WiFi on the headset to avoid interference and ensure traffic routes through the USB cable.
+</Warning>

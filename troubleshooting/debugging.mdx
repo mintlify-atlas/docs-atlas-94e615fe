@@ -1,0 +1,221 @@
+---
+title: "Debugging"
+description: "Advanced debugging techniques for WiVRn, including crash analysis, ADB control, game debugging, and remote native debugging."
+---
+
+## Prerequisites
+
+### ADB setup
+
+[ADB (Android Debug Bridge)](https://developer.android.com/tools/adb) is required to debug the headset client. Connect your headset to your PC via a USB data cable and authorize the connection when prompted in the headset.
+
+### Clean installation
+
+When debugging, ensure the headset client matches the server version. Perform a clean reinstall:
+
+```bash
+# Find and uninstall the existing installation
+WIVRN_PKG=$(adb shell pm list packages | grep wivrn | cut -d: -f2)
+adb uninstall ${WIVRN_PKG}
+
+# Install a debug APK
+adb install /path/to/wivrn-standard-debug.apk
+```
+
+---
+
+## Starting components for debugging
+
+### Start the headset client via ADB
+
+```bash
+WIVRN_PKG=$(adb shell pm list packages | grep wivrn | cut -d: -f2)
+adb shell am start ${WIVRN_PKG}/org.meumeu.wivrn.MainActivity
+```
+
+### Connect to a specific server
+
+Replace `localhost` with the IP address of the server you want to connect to:
+
+```bash
+WIVRN_PKG=$(adb shell pm list packages | grep wivrn | cut -d: -f2)
+ADDRESS=localhost
+adb shell am start -a android.intent.action.VIEW -d "wivrn://${ADDRESS}" ${WIVRN_PKG}
+```
+
+### Stop the client
+
+```bash
+WIVRN_PKG=$(adb shell pm list packages | grep wivrn | cut -d: -f2)
+adb shell am force-stop ${WIVRN_PKG}
+```
+
+---
+
+## Crash debugging — server
+
+### Systemd systems
+
+Core dumps are managed by [systemd-coredump](https://www.freedesktop.org/software/systemd/man/latest/coredumpctl.html).
+
+View the most recent crash:
+
+```bash
+coredumpctl info
+```
+
+Start a debugger on the most recent crash:
+
+```bash
+coredumpctl -1 debug
+```
+
+Useful GDB commands once inside the debugger:
+
+```text
+# Select frame 2
+f 2
+
+# View local variables
+info locals
+
+# Print backtrace
+bt
+```
+
+### Non-systemd systems
+
+Check where core dumps are written:
+
+```bash
+cat /proc/sys/kernel/core_pattern
+```
+
+Set a simple core pattern that writes files to `/tmp/`:
+
+```bash
+sudo sysctl -w kernel.core_pattern=/tmp/core.%e.%p.%t
+```
+
+Analyze a core dump with GDB:
+
+```bash
+gdb /usr/bin/wivrn-server /tmp/core.wivrn-server.12345.1706234567
+```
+
+Useful GDB commands:
+
+```text
+# Print backtrace
+bt
+
+# View all threads
+info threads
+
+# Switch to thread 2
+thread 2
+
+# Print backtrace for all threads
+thread apply all bt
+```
+
+---
+
+## Crash debugging — HMD client
+
+Copy the traceback from headset logs using logcat:
+
+```bash
+adb logcat '*:F' | grep -A 50 wivrn
+```
+
+---
+
+## Game debugging
+
+### Proton/Wine games
+
+Enable additional logging for Windows compatibility layers by adding the following to your Steam launch options:
+
+```text
+PROTON_LOG=1 WINEDEBUG=vrclient,openxr,steam %command%
+```
+
+### OpenComposite
+
+For games using OpenVR with [OpenComposite](https://gitlab.com/znixian/OpenOVR), find the log at:
+
+```text
+$HOME/.local/state/OpenComposite/logs/opencomposite.log
+```
+
+### xrizer
+
+To debug [xrizer](https://github.com/Supreeeme/xrizer), set the `RUST_LOG` environment variable to control the log level. Accepted levels are `error`, `warn`, `info`, `debug`, and `trace`.
+
+xrizer also defines two useful non-standard logging targets:
+
+| Target | Description |
+|---|---|
+| `openvr_calls` | Logs the name of each OpenVR function as it is called |
+| `tracked_property` | Logs the name and device index of each requested tracked device property |
+
+The xrizer log is written to `$XDG_STATE_HOME/xrizer/xrizer.txt`, or `$HOME/.local/state/xrizer/xrizer.txt` if `$XDG_STATE_HOME` is not set.
+
+---
+
+## Remote native debugging (advanced)
+
+This section covers attaching a native debugger to the headset client remotely. It requires the Android NDK and familiarity with LLDB.
+
+<Steps>
+  <Step title="Start the client with debugging enabled">
+    ```bash
+    WIVRN_PKG=$(adb shell pm list packages | grep wivrn | cut -d: -f2)
+    adb shell am start -D ${WIVRN_PKG}/org.meumeu.wivrn.MainActivity
+    ```
+  </Step>
+  <Step title="Push the LLDB server to the device">
+    ```bash
+    adb shell "mkdir -p /data/local/tmp/tools"
+    adb push "$ANDROID_NDK/toolchains/llvm/prebuilt/linux-x86_64/lib64/clang/*/lib/linux/aarch64/lldb-server" /data/local/tmp/tools/
+    ```
+  </Step>
+  <Step title="Start the LLDB server on the device">
+    ```bash
+    adb shell /data/local/tmp/tools/lldb-server platform --server --listen '*:5039'
+    ```
+  </Step>
+  <Step title="Forward the port to your host">
+    ```bash
+    adb forward tcp:5039 tcp:5039
+    ```
+  </Step>
+  <Step title="Connect from your host with LLDB">
+    ```bash
+    lldb
+    (lldb) platform select remote-android
+    (lldb) platform connect connect://localhost:5039
+    ```
+  </Step>
+  <Step title="Resume the app (required for the -D flag)">
+    ```bash
+    adb forward tcp:12345 jdwp:$(adb shell pidof ${WIVRN_PKG})
+    jdb -attach localhost:12345
+    ```
+  </Step>
+</Steps>
+
+See the [Android NDK debugging guide](https://developer.android.com/ndk/guides/ndk-gdb) for more details.
+
+---
+
+## OpenXR runtime configuration
+
+Check the active OpenXR runtime:
+
+```bash
+ls -la $HOME/.config/openxr/1/active_runtime.json
+```
+
+This symlink should point to `openxr_wivrn.json` (for example, `/usr/share/openxr/1/openxr_wivrn.json`). If it points elsewhere, WiVRn is not the active OpenXR runtime and applications will not connect to it.

@@ -1,0 +1,50 @@
+---
+title: "Steam and OpenVR"
+description: "How to run OpenVR and Steam games with WiVRn using xrizer or OpenComposite."
+---
+
+WiVRn provides an OpenXR runtime only. Games that use the OpenVR API (including most SteamVR titles) require a compatibility layer to translate OpenVR calls to OpenXR.
+
+## Compatibility layers
+
+Two options are supported:
+
+- **[xrizer](https://github.com/Supreeeme/xrizer)** — the recommended option
+- **[OpenComposite](https://gitlab.com/znixian/OpenOVR/)** — an alternative
+
+<Tip>
+  The WiVRn Flatpak includes both xrizer and OpenComposite. No separate installation is needed when using the Flatpak.
+</Tip>
+
+WiVRn automatically detects xrizer and OpenComposite in standard installation locations. When a headset connects, WiVRn sets the OpenVR runtime to xrizer unless you have configured it differently.
+
+If your compatibility layer is installed in a non-standard location, set the path with the `openvr-compat-path` configuration option.
+
+## Steam (pressure vessel)
+
+Steam runs games inside a container called pressure vessel, which does not pass through OpenXR by default. Two adjustments are required:
+
+- Files under `/usr` are mapped to `/run/host/usr` inside the container. If xrizer or OpenComposite is installed under `/usr`, ensure that `VR_OVERRIDE` or `~/.config/openvr/openvrpaths.vrpath` uses the `/run/host/usr` prefix.
+- Set the environment variable `PRESSURE_VESSEL_IMPORT_OPENXR_1_RUNTIMES=1` to pass through the WiVRn OpenXR manifest, library locations, and socket location into the container.
+
+## Steam Flatpak
+
+If you use the Steam Flatpak, grant it read-only access to the paths WiVRn needs:
+
+```bash
+flatpak override \
+  --filesystem=xdg-run/wivrn:ro \
+  --filesystem=xdg-data/flatpak/app/io.github.wivrn.wivrn:ro \
+  --filesystem=/var/lib/flatpak/app/io.github.wivrn.wivrn:ro \
+  --filesystem=xdg-config/openxr:ro \
+  --filesystem=xdg-config/openvr:ro \
+  com.valvesoftware.Steam
+```
+
+<Note>
+  If you installed Steam Flatpak as a user installation (not system-wide), add `--user` to each `flatpak override` call.
+</Note>
+
+## Wine and Proton
+
+Wine and Proton probe for an OpenVR runtime at startup — even for OpenXR applications. This means xrizer or OpenComposite is required for any game running under Wine or Proton, regardless of whether the game itself uses OpenVR or OpenXR.

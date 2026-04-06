@@ -1,0 +1,139 @@
+---
+title: "wivrnctl"
+description: "Command-line tool for managing WiVRn from the terminal — pair headsets, list connections, and control the server."
+---
+
+`wivrnctl` is a command-line utility that communicates with a running `wivrn-server` process via D-Bus. It lets you manage headset pairing, control the server, and inspect connected devices without using the dashboard GUI.
+
+<Note>
+  `wivrnctl` requires `wivrn-server` to already be running. It also requires systemd (D-Bus via libsystemd). It is built by default alongside the server.
+</Note>
+
+## Subcommands
+
+### `pair`
+
+Allow a new headset to connect by enabling pairing mode for a limited time. Displays a PIN to enter on the headset.
+
+```bash
+wivrnctl pair [--duration|-d MINUTES|unlimited]
+```
+
+| Option | Default | Description |
+|--------|---------|-------------|
+| `--duration`, `-d` | `2` | How long (in minutes) to accept new connections. Use `unlimited` for no time limit. |
+
+**Example — open pairing for 5 minutes:**
+
+```bash
+wivrnctl pair --duration 5
+```
+
+**Disable pairing immediately:**
+
+```bash
+wivrnctl pair --duration 0
+```
+
+---
+
+### `list-paired`
+
+List all headsets that have previously paired with this server.
+
+```bash
+wivrnctl list-paired [--keys|-k]
+```
+
+| Option | Description |
+|--------|-------------|
+| `--keys`, `-k` | Also display each headset's public key |
+
+Output shows the headset number, name, and time since last connection.
+
+---
+
+### `unpair`
+
+Remove a headset so it can no longer connect to this server.
+
+```bash
+wivrnctl unpair HEADSET
+```
+
+`HEADSET` is the headset number shown in the `list-paired` output.
+
+---
+
+### `rename`
+
+Rename a paired headset.
+
+```bash
+wivrnctl rename HEADSET NAME
+```
+
+| Argument | Description |
+|----------|-------------|
+| `HEADSET` | Headset number from `list-paired` |
+| `NAME` | New display name for the headset |
+
+---
+
+### `disconnect`
+
+Disconnect the currently connected headset.
+
+```bash
+wivrnctl disconnect
+```
+
+---
+
+### `stop-server`
+
+Stop the running `wivrn-server` process.
+
+```bash
+wivrnctl stop-server
+```
+
+---
+
+### `tab`
+
+Show or set the currently active tab displayed on the connected headset.
+
+```bash
+# Show the current tab
+wivrnctl tab
+
+# Set the active tab
+wivrnctl tab TAB
+```
+
+## Typical workflow
+
+<Steps>
+  <Step title="Start the server">
+    Launch `wivrn-server` or `wivrn-dashboard` on your PC.
+  </Step>
+  <Step title="Enable pairing">
+    ```bash
+    wivrnctl pair
+    ```
+    Note the PIN displayed. On your headset, enter the PIN when prompted.
+  </Step>
+  <Step title="Verify the headset is paired">
+    ```bash
+    wivrnctl list-paired
+    ```
+  </Step>
+  <Step title="Disconnect or stop when done">
+    ```bash
+    wivrnctl disconnect
+    # or, to stop the server entirely:
+    wivrnctl stop-server
+    ```
+  </Step>
+</Steps>

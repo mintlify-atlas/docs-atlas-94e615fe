@@ -1,0 +1,60 @@
+---
+title: "Common issues"
+description: "Solutions to the most frequently encountered WiVRn connection and streaming problems."
+---
+
+<AccordionGroup>
+  <Accordion title="My computer is not seen by the headset">
+    If the server list is empty in the headset app:
+
+    - Make sure your computer is connected to the same network as your headset.
+    - Check that Avahi is running:
+      ```bash
+      systemctl status avahi-daemon
+      ```
+      If it is not running, enable it:
+      ```bash
+      systemctl enable --now avahi-daemon
+      ```
+    - If you have a firewall, check that port **5353/UDP** is open. This port is used by Avahi for mDNS discovery.
+  </Accordion>
+
+  <Accordion title="My headset does not connect to my computer">
+    - If you have a firewall, check that port **9757** (UDP and TCP) is open.
+    - The server and client must be on the **same version** of WiVRn. Mismatched versions will prevent a successful connection.
+
+    <Warning>
+      Connecting a headset running a different WiVRn version than the server will fail. Update both the server and the headset app together.
+    </Warning>
+  </Accordion>
+
+  <Accordion title="How do I use a wired connection?">
+    You can connect your headset to your PC via USB cable instead of Wi-Fi. This is useful for reducing latency or working around network issues.
+
+    See the [wired connection](/usage/wired-connection) page for full setup instructions.
+  </Accordion>
+
+  <Accordion title="How do I see server logs when using the dashboard?">
+    There are two ways to access server logs from the dashboard:
+
+    - Click **Troubleshoot** → **Open server logs** in the dashboard.
+    - Navigate to the log directory manually:
+      - Default: `${XDG_STATE_HOME}/wivrn/wivrn-dashboard` (falls back to `${HOME}/.local/state` if `XDG_STATE_HOME` is not set)
+      - Flatpak: `${HOME}/.var/app/io.github.wivrn.wivrn/.local/state/wivrn/wivrn-dashboard`
+  </Accordion>
+
+  <Accordion title="I have high motion latency, black borders, corrupted audio, or a pixelated image">
+    These symptoms often indicate network or encoding issues. Try the following steps in order:
+
+    - **USB connection**: If connecting via USB cable, make sure Wi-Fi is switched off on the headset. Running both simultaneously can cause interference.
+    - **Reset settings**: Use the reset button at the bottom of the settings tab in the WiVRn app to restore defaults.
+    - **Switch to software encoding**: Hardware encoding may be misconfigured. Try enabling software encoding (x264) in the server settings.
+    - **Decrease the bitrate**: A lower bitrate reduces the data rate and can resolve corruption caused by network congestion.
+    - **Decrease the resolution**: Lower the rendering resolution in the WiVRn headset app.
+    - **Improve your connection**: Connect via USB cable or use a better Wi-Fi router with less interference.
+
+    <Note>
+      WiVRn is not fully optimized for NVIDIA GPUs due to limited developer access to NVIDIA hardware. Motion latency may be significantly worse at rendering resolutions higher than the default on NVIDIA systems.
+    </Note>
+  </Accordion>
+</AccordionGroup>

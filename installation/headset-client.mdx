@@ -1,0 +1,71 @@
+---
+title: 'Headset client installation'
+description: 'Install the WiVRn app on your standalone Android VR headset.'
+---
+
+The WiVRn headset app connects to the server running on your PC. The easiest way to install it is through the dashboard wizard, which detects your headset type and guides you to the correct install method.
+
+<Warning>
+  The headset client and PC server must be on the same version of WiVRn. Mismatched versions will prevent a successful connection.
+</Warning>
+
+## Recommended: use the dashboard wizard
+
+<Steps>
+  <Step title="Start the WiVRn server on your PC">
+    Launch the WiVRn dashboard from your application launcher or run `wivrn-dashboard` in a terminal.
+  </Step>
+  <Step title="Follow the setup wizard">
+    The wizard runs automatically on first launch. It detects your headset type and directs you to the correct install source — either the Meta Store or a direct APK download.
+  </Step>
+  <Step title="Install the app on your headset">
+    Complete the installation using the method the wizard provides, then launch WiVRn from your headset's app library.
+  </Step>
+</Steps>
+
+## Manual installation
+
+If you prefer to install the client without using the wizard, choose the method for your headset below.
+
+<Tabs>
+  <Tab title="Meta Quest">
+    The WiVRn client is available on the Meta Store for all Quest headsets (Quest 1, 2, 3, 3s, and Pro):
+
+    [Meta Store — WiVRn](https://www.meta.com/experiences/7959676140827574/)
+
+    Install it directly from the store on your headset, or from the Meta mobile app.
+  </Tab>
+  <Tab title="Other headsets (APK)">
+    For Pico, HTC, Samsung, and other Android VR headsets, download the APK from [GitHub releases](https://github.com/WiVRn/WiVRn/releases) and install it manually.
+
+    <Steps>
+      <Step title="Download the APK">
+        Go to the [WiVRn releases page](https://github.com/WiVRn/WiVRn/releases) and download the latest `WiVRn-release.apk`.
+      </Step>
+      <Step title="Enable developer mode or sideloading on your headset">
+        Consult your headset's documentation to allow installation from unknown sources.
+      </Step>
+      <Step title="Install the APK">
+        Transfer the APK to your headset and install it, or use ADB (see below).
+      </Step>
+    </Steps>
+
+    **Install via ADB:**
+
+    ```bash
+    adb install WiVRn-release.apk
+    ```
+  </Tab>
+</Tabs>
+
+## APK package names
+
+Each install source uses a different Android package name. This matters when using ADB commands (for example, for [wired connections](/usage/wired-connection)).
+
+| Package name | Source |
+|---|---|
+| `org.meumeu.wivrn` | Meta Store |
+| `org.meumeu.wivrn.github` | GitHub releases |
+| `org.meumeu.wivrn.github.nightly` | GitHub nightlies (WiVRn-APK repository) |
+| `org.meumeu.wivrn.github.testing` | GitHub CI builds |
+| `org.meumeu.wivrn.local` | Developer builds |

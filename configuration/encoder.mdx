@@ -1,0 +1,155 @@
+---
+title: "Encoder configuration"
+description: "Configure the video encoder, codec, bit depth, and per-eye stream layout for WiVRn."
+---
+
+WiVRn encodes each eye as a separate stream, plus an optional alpha (transparency) channel shared between both eyes. Each stream is encoded independently, which makes better use of hardware resources and reduces latency.
+
+You can configure all streams identically with a single object, or provide a list of three objects to control the left eye, right eye, and alpha streams separately.
+
+## Options
+
+<ParamField path="bit-depth" type="number" default="8">
+  Bit depth of the encoded video. Accepted values are `8` and `10`.
+
+  10-bit encoding requires the `vaapi` or `nvenc` encoder with the `h265` or `av1` codec. If the codec or hardware does not support 10-bit, WiVRn falls back to 8-bit automatically.
+</ParamField>
+
+<ParamField path="encoder" type="string | object | array">
+  The encoder to use. Can be:
+
+  - A **string**: the encoder identifier, applied to all streams.
+  - An **object**: an encoder configuration block, applied to all streams.
+  - An **array of three objects**: separate configuration for `[left, right, alpha]` streams.
+
+  When omitted, WiVRn auto-selects based on your GPU:
+  - `nvenc` if an Nvidia GPU is detected and WiVRn was built with nvenc support.
+  - `vaapi` for all other GPUs when built with FFmpeg/VAAPI support.
+  - `x264` as the software fallback.
+
+  **Encoder identifiers:**
+
+  | Identifier | Type | Supported codecs |
+  |---|---|---|
+  | `x264` | Software | `h264` only |
+  | `nvenc` | Nvidia hardware | `h264`, `h265`, `av1` |
+  | `vaapi` | AMD/Intel hardware | `h264`, `h265`, `av1` |
+  | `vulkan` | Experimental (any GPU with Vulkan video encode) | `h264`, `h265` |
+  | `raw` | Uncompressed passthrough | `raw` only |
+</ParamField>
+
+<ParamField path="encoder.codec" type="string">
+  The video codec to use for encoding. Defaults to the best codec supported by both the headset and the selected encoder, evaluated in this order: `av1` > `h265` > `h264`.
+
+  | Value | Notes |
+  |---|---|
+  | `h264` | Universally supported; forces 8-bit depth |
+  | `h265` | Better quality/bitrate than H.264; supports 10-bit |
+  | `av1` | Best efficiency; supports 10-bit; requires capable hardware |
+  | `raw` | Uncompressed; only works with the `raw` encoder |
+
+  <Note>
+    For Nvidia GPUs using `nvenc`, check the [Nvidia Video Encode and Decode Support Matrix](https://developer.nvidia.com/video-encode-decode-support-matrix) to confirm your GPU supports the desired codec.
+  </Note>
+</ParamField>
+
+<ParamField path="encoder.device" type="string">
+  **(vaapi only)** Path to the DRM render node to use for encoding. When unset, WiVRn auto-detects the device.
+
+  Specify this explicitly to offload encoding to a secondary GPU (for example, an integrated GPU) while the discrete GPU handles rendering.
+
+  Example value: `/dev/dri/renderD128`
+</ParamField>
+
+<ParamField path="encoder.options" type="object">
+  **(vaapi only, advanced)** A JSON object of additional options passed directly to FFmpeg's `avcodec_open2` as the `option` parameter. Keys and values are both strings.
+
+  Only use this if you need low-level control over the FFmpeg codec configuration.
+</ParamField>
+
+## Examples
+
+<CodeGroup>
+
+```json Simple vaapi + h265
+{
+  "encoder": {
+    "encoder": "vaapi",
+    "codec": "h265"
+  }
+}
+```
+
+```json Hardware + software (per-eye)
+{
+  "encoder": [
+    {
+      "encoder": "vaapi",
+      "codec": "h265"
+    },
+    {
+      "encoder": "x264",
+      "codec": "h264"
+    },
+    {
+      "encoder": "vaapi",
+      "codec": "h265"
+    }
+  ]
+}
+```
+
+</CodeGroup>
+
+The per-eye example above uses vaapi hardware encoding for the left eye and alpha channel, and x264 software encoding for the right eye. Each stream is processed independently.
+
+### nvenc codec matrix
+
+The following table shows common combinations when using `nvenc`. Refer to the Nvidia support matrix to verify your specific GPU model.
+
+| Codec | 8-bit | 10-bit |
+|---|---|---|
+| `h264` | Supported | Not supported |
+| `h265` | Supported | Supported |
+| `av1` | Supported | Supported |
+
+### Offloading encode to an iGPU
+
+```json
+{
+  "encoder": {
+    "encoder": "vaapi",
+    "codec": "h265",
+    "device": "/dev/dri/renderD128"
+  }
+}
+```
+
+### Advanced vaapi options
+
+```json
+{
+  "encoder": {
+    "encoder": "vaapi",
+    "codec": "h265",
+    "options": {
+      "rc_mode": "2"
+    }
+  }
+}
+```
+
+## Build-time encoder availability
+
+Which encoders are available depends on the compile-time options used when building WiVRn. Packagers and self-builders can control this with the following CMake flags:
+
+| CMake option | Default | Description |
+|---|---|---|
+| `WIVRN_USE_NVENC` | `ON` | Enable Nvidia hardware encoder |
+| `WIVRN_USE_VAAPI` | `ON` | Enable AMD/Intel VAAPI hardware encoder (requires FFmpeg) |
+| `WIVRN_USE_VULKAN_ENCODE` | `ON` | Enable experimental Vulkan video encoder |
+| `WIVRN_USE_X264` | `ON` | Enable x264 software encoder |
+
+<Warning>
+  At least one encoder must be enabled at build time. Building with all four disabled will produce a configure-time error.
+</Warning>

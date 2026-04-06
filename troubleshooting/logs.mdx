@@ -1,0 +1,76 @@
+---
+title: "Collecting logs"
+description: "How to collect server and headset client logs for diagnosing WiVRn issues."
+---
+
+## Server logs
+
+Start the server with debug logging enabled:
+
+```bash
+XRT_LOG=debug XRT_COMPOSITOR_LOG=debug wivrn-server
+```
+
+To dump video frames for analysis at the same time:
+
+```bash
+XRT_LOG=debug XRT_COMPOSITOR_LOG=debug WIVRN_DUMP_VIDEO=/tmp/video-dump wivrn-server
+```
+
+The video dump can be played back with `mpv` or another media player to verify what was being sent to the headset. Multiple files are written — one per video stream per codec. For example: `/tmp/video-dump-0.h264`.
+
+**From the dashboard**: Click **Troubleshoot** → **Open server logs**.
+
+---
+
+## HMD client logs (via ADB)
+
+The primary method for collecting logs from the headset is [ADB logcat](https://developer.android.com/tools/logcat). Connect your headset via USB and authorize the connection when prompted.
+
+Watch for crashes (FATAL priority):
+
+```bash
+adb logcat '*:F'
+```
+
+Record errors and above to a timestamped file:
+
+```bash
+adb logcat '*:E' | tee -a errors-$(date "+%Y-%m-%d-%H").log
+```
+
+WiVRn-only verbose logs:
+
+```bash
+adb logcat '*:S' WiVRn:V
+```
+
+Watch WiVRn client logs:
+
+```bash
+adb logcat | grep WiVRn
+```
+
+Watch Android system logs related to WiVRn:
+
+```bash
+adb logcat | grep wivrn
+```
+
+---
+
+## Finding your package name
+
+The WiVRn package name varies by build variant. To find the installed package on your headset:
+
+```bash
+adb shell pm list packages | grep wivrn
+```
+
+| Package name | Source |
+|---|---|
+| `org.meumeu.wivrn` | App store (Meta Store) |
+| `org.meumeu.wivrn.github` | GitHub releases |
+| `org.meumeu.wivrn.local` | Locally built (developer) |
+| `org.meumeu.wivrn.github.testing` | GitHub CI builds |
+| `org.meumeu.wivrn.github.nightly` | APK repository (nightlies) |

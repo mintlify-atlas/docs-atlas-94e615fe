@@ -1,0 +1,103 @@
+---
+title: 'Server installation'
+description: 'Install the WiVRn server and dashboard on your Linux PC.'
+---
+
+The WiVRn server runs on your Linux computer and streams VR content to your headset. Native packages are available for several distributions; Flatpak is recommended for all other distributions.
+
+## Install the server
+
+<Tabs>
+  <Tab title="Flatpak (recommended)">
+    The Flatpak release on Flathub works on any Linux distribution and is kept up to date.
+
+    ```bash
+    flatpak install flathub io.github.wivrn.wivrn
+    ```
+
+    <Warning>
+      Due to Flatpak sandboxing, some features may not be available. In particular, Lighthouse-tracked devices may not work with the Flatpak version.
+    </Warning>
+  </Tab>
+  <Tab title="Arch Linux">
+    Install the `wivrn-dashboard` package from the AUR:
+
+    ```bash
+    # Using your AUR helper, for example paru or yay
+    paru -S wivrn-dashboard
+    ```
+
+    The package is available at [aur.archlinux.org/packages/wivrn-dashboard](https://aur.archlinux.org/packages/wivrn-dashboard).
+  </Tab>
+  <Tab title="Fedora">
+    Install the `wivrn` package from the official Fedora repositories:
+
+    ```bash
+    sudo dnf install wivrn
+    ```
+
+    Package details: [packages.fedoraproject.org/pkgs/wivrn/wivrn](https://packages.fedoraproject.org/pkgs/wivrn/wivrn/)
+  </Tab>
+  <Tab title="Gentoo">
+    The package is available in the Gentoo Guru overlay as `media-libs/wivrn`.
+
+    ```bash
+    # Add the Guru overlay if you haven't already
+    eselect repository enable guru
+    emaint sync -r guru
+
+    emerge --ask media-libs/wivrn
+    ```
+  </Tab>
+  <Tab title="NixOS">
+    The `wivrn` package is available in nixpkgs:
+
+    ```nix
+    environment.systemPackages = [ pkgs.wivrn ];
+    ```
+
+    Package details: [search.nixos.org/packages?channel=25.11&show=wivrn](https://search.nixos.org/packages?channel=25.11&show=wivrn)
+  </Tab>
+</Tabs>
+
+## Prerequisites before running
+
+Before starting the server, make sure Avahi is running. WiVRn uses Avahi for headset discovery on the local network.
+
+```bash
+systemctl enable --now avahi-daemon
+```
+
+If you have a firewall enabled, open the required ports:
+
+| Port | Protocol | Purpose |
+|------|----------|---------|
+| 5353 | UDP | Avahi (mDNS device discovery) |
+| 9757 | UDP + TCP | WiVRn streaming |
+
+For example, with UFW:
+
+```bash
+ufw allow 5353/udp
+ufw allow 9757
+```
+
+## Launch the server
+
+Run the WiVRn dashboard from your application launcher by searching for **WiVRn**, or from the terminal:
+
+```bash
+wivrn-dashboard
+```
+
+The setup wizard runs automatically on first launch and guides you through pairing your headset.
+
+## OpenVR and Steam compatibility
+
+WiVRn is an OpenXR runtime. To play Steam games that use the OpenVR API, you need a compatibility layer such as [xrizer](https://github.com/Supreeeme/xrizer) or [OpenComposite](https://gitlab.com/znixian/OpenOVR/).
+
+<Note>
+  The Flatpak release of WiVRn already bundles both xrizer and OpenComposite. When a headset connects, WiVRn sets xrizer as the active OpenVR runtime automatically unless you have configured it differently.
+</Note>
+
+See [Steam and OpenVR](/usage/steam-and-openvr) for setup details.

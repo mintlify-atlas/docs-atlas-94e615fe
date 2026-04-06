@@ -1,0 +1,118 @@
+---
+title: "Advanced configuration"
+description: "Advanced WiVRn config options: auto-launch, HID forwarding, OpenVR compatibility, and debug features."
+---
+
+These options cover less common scenarios such as automatically launching a game when a headset connects, forwarding input devices, and enabling optional build features.
+
+## Options
+
+<ParamField path="application" type="string | array">
+  An application to launch automatically when a headset connects. Use a string for commands with no arguments, or an array of strings to pass arguments.
+
+  The application is started on the server. It is stopped when the headset disconnects.
+
+  ```json
+  {
+    "application": ["steam", "steam://launch/275850/VR"]
+  }
+  ```
+
+  This example launches No Man's Sky in VR mode via Steam when the headset connects. Any Steam game's VR launch URL can be used in the same way.
+</ParamField>
+
+<ParamField path="openvr-compat-path" type="string | null">
+  Path to the directory of an OpenVR compatibility layer such as [xrizer](https://github.com/Supreeeme/xrizer) or OpenComposite.
+
+  | Value | Behavior |
+  |---|---|
+  | Unset | WiVRn auto-detects the compatibility layer from standard search paths |
+  | A path string | Use this exact directory |
+  | `null` | Disable OpenVR compatibility management entirely |
+
+  ```json
+  {
+    "openvr-compat-path": "/opt/xrizer"
+  }
+  ```
+
+  <Note>
+    Set this to `null` if you manage the OpenVR runtime configuration yourself and do not want WiVRn to interfere.
+  </Note>
+</ParamField>
+
+<ParamField path="hid-forwarding" type="boolean" default="false">
+  Enables forwarding of keyboard and mouse input from the headset to the server.
+
+  ```json
+  {
+    "hid-forwarding": true
+  }
+  ```
+
+  <Warning>
+    HID forwarding requires the `uinput` kernel module to be loaded and the WiVRn server process to have write access to the `uinput` device. Without these prerequisites, enabling this option has no effect.
+
+    To load the module: `modprobe uinput`
+  </Warning>
+</ParamField>
+
+<ParamField path="debug-gui" type="boolean" default="false">
+  Enables the Monado debug GUI, which shows internal runtime state and diagnostics.
+
+  ```json
+  {
+    "debug-gui": true
+  }
+  ```
+
+  <Warning>
+    This option only has effect when WiVRn was built with the `WIVRN_FEATURE_DEBUG_GUI` CMake option enabled. It is disabled by default in most pre-built packages.
+  </Warning>
+</ParamField>
+
+<ParamField path="use-steamvr-lh" type="boolean" default="false">
+  Enables the SteamVR Lighthouse driver, allowing SteamVR-tracked devices (base stations and controllers) to be used alongside WiVRn.
+
+  ```json
+  {
+    "use-steamvr-lh": true
+  }
+  ```
+
+  <Warning>
+    This option only has effect when WiVRn was built with the `WIVRN_FEATURE_STEAMVR_LIGHTHOUSE` CMake option enabled. It is disabled by default in most pre-built packages.
+  </Warning>
+</ParamField>
+
+## Build-time feature flags
+
+Several advanced features are gated by CMake options at compile time. These affect whether the corresponding config options do anything at runtime.
+
+### Encoder availability
+
+| CMake option | Default | Description |
+|---|---|---|
+| `WIVRN_USE_NVENC` | `ON` | Nvidia hardware encoder |
+| `WIVRN_USE_VAAPI` | `ON` | AMD/Intel VAAPI hardware encoder (requires FFmpeg) |
+| `WIVRN_USE_VULKAN_ENCODE` | `ON` | Experimental Vulkan video encoder |
+| `WIVRN_USE_X264` | `ON` | x264 software encoder |
+
+### Audio backends
+
+| CMake option | Default | Description |
+|---|---|---|
+| `WIVRN_USE_PIPEWIRE` | `ON` | PipeWire audio backend |
+| `WIVRN_USE_PULSEAUDIO` | `OFF` | PulseAudio audio backend |
+
+### Optional features
+
+| CMake option | Default | Description |
+|---|---|---|
+| `WIVRN_USE_SYSTEMD` | `ON` | systemd integration (service management and pretty hostname support) |
+| `WIVRN_FEATURE_STEAMVR_LIGHTHOUSE` | `ON` | SteamVR Lighthouse tracked device driver |
+| `WIVRN_FEATURE_DEBUG_GUI` | `OFF` | Monado debug GUI |
+
+<Tip>
+  If you install WiVRn from a distribution package or Flatpak, the build flags are determined by the packager. Check the package's build recipe if you need to know which features are included.
+</Tip>

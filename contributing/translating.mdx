@@ -1,0 +1,85 @@
+---
+title: 'Translating'
+description: 'Contribute translations for the WiVRn headset app and server dashboard.'
+---
+
+Both the headset application and the server dashboard are translated. Contributions to improve existing translations or add new languages are welcome.
+
+## Required software
+
+You need `gettext` and a text editor. Optionally, you can use a graphical `.po` file editor:
+
+- [GNOME Translation Editor](https://wiki.gnome.org/Apps/Gtranslator/) — straightforward GUI for editing translation files
+- [Lokalize](https://apps.kde.org/lokalize/) — KDE-based translation editor
+
+<Warning>
+  If you use Lokalize, erase the **Default mailing list** field in its settings before editing. If left set, Lokalize will write a KDE mailing list address into the translation file header, which you will need to remove manually before submitting.
+</Warning>
+
+## Adding a new language
+
+<Steps>
+  <Step title="Run the message update script">
+    Replace `LANG` with the two-letter [ISO 639](https://en.wikipedia.org/wiki/List_of_ISO_639_language_codes) language code for the language you want to add (for example, `fr` for French or `de` for German):
+
+    ```bash
+    tools/update_messages.sh LANG
+    ```
+
+    This creates `.po` files for the new language in the `locale/` directory.
+  </Step>
+
+  <Step title="Fill in the translations">
+    Open the generated files in your text editor or graphical translation tool and fill in the translation strings.
+  </Step>
+
+  <Step title="Submit a pull request">
+    Stage the new files, commit, and open a pull request:
+
+    ```bash
+    git add locale/
+    git commit -m "Add LANG translation"
+    ```
+  </Step>
+</Steps>
+
+## Editing existing translations
+
+<Steps>
+  <Step title="Run the message update script for your language(s)">
+    Pass one or more language codes to the script. It will add entries for any strings that are missing translations:
+
+    ```bash
+    tools/update_messages.sh fr de
+    ```
+  </Step>
+
+  <Step title="Edit the translation strings">
+    Open the updated `.po` files and fill in or correct the translation strings.
+  </Step>
+
+  <Step title="Submit a pull request">
+    Stage the edited files, commit, and open a pull request:
+
+    ```bash
+    git add locale/
+    git commit -m "Update fr translation"
+    ```
+  </Step>
+</Steps>
+
+## Testing translations locally
+
+When you run `wivrn-dashboard` from a build directory, it loads translation files from the system-wide install location, not from your local build. Local changes to translation files will not be visible by default.
+
+To override this and load translations from your build directory, set `XDG_DATA_DIRS` before launching the dashboard:
+
+```bash
+XDG_DATA_DIRS=<build-dir>/dashboard/share/:$XDG_DATA_DIRS wivrn-dashboard
+```
+
+Replace `<build-dir>` with the path to your CMake build directory.
+
+## Translation files
+
+Translation source files are located in the [`locale/`](https://github.com/WiVRn/WiVRn/tree/master/locale) directory of the repository.

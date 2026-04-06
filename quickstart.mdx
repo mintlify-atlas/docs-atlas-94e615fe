@@ -1,80 +1,173 @@
 ---
-title: "Quickstart"
-description: "Start building awesome documentation in minutes"
+title: "Quick start"
+description: "Install the WiVRn server on your Linux PC, set up your headset app, and start streaming VR games wirelessly in minutes."
 ---
 
-## Get started in three steps
+This guide covers the most common setup: installing the WiVRn server via Flatpak and connecting a Meta Quest headset. For other distributions or headsets, the steps are the same — only the install method differs.
 
-Get your documentation site running locally and make your first customization.
+<Note>
+  The WiVRn headset app and PC server must be on the **same version**. The easiest way to guarantee this is to install the headset app through the dashboard wizard after installing the server.
+</Note>
 
-### Step 1: Set up your local environment
+## Prerequisites
 
-<AccordionGroup>
-  <Accordion icon="copy" title="Clone your docs locally">
-    During the onboarding process, you created a GitHub repository with your docs content if you didn't already have one. You can find a link to this repository in your [dashboard](https://dashboard.mintlify.com).
-    
-    To clone the repository locally so that you can make and preview changes to your docs, follow the [Cloning a repository](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository) guide in the GitHub docs.
-  </Accordion>
-  <Accordion icon="rectangle-terminal" title="Start the preview server">
-    1. Install the Mintlify CLI: `npm i -g mint`
-    2. Navigate to your docs directory and run: `mint dev`
-    3. Open `http://localhost:3000` to see your docs live!
-    
-    <Tip>Your preview updates automatically as you edit files.</Tip>
-  </Accordion>
-</AccordionGroup>
+Before you begin:
 
-### Step 2: Deploy your changes
+- Your Linux PC and VR headset must be on the **same local network** (same WiFi router, or PC on ethernet and headset on WiFi from the same router).
+- **Avahi** must be running for automatic headset discovery.
+- If you have a firewall, the required ports must be open.
 
-<AccordionGroup>
-  <Accordion icon="github" title="Install our GitHub app">
-    Install the Mintlify GitHub app from your [dashboard](https://dashboard.mintlify.com/settings/organization/github-app).
-    
-    Our GitHub app automatically deploys your changes to your docs site, so you don't need to manage deployments yourself.
-</Accordion>
-<Accordion icon="palette" title="Update your site name and colors">
-    For a first change, let's update the name and colors of your docs site.
+**Start Avahi:**
 
-    1. Open `docs.json` in your editor.
-    2. Change the `"name"` field to your project name.
-    3. Update the `"colors"` to match your brand.
-    4. Save and see your changes instantly at `http://localhost:3000`.
+```bash
+systemctl enable --now avahi-daemon
+```
 
-    <Tip>Try changing the primary color to see an immediate difference!</Tip>
-  </Accordion>
-</AccordionGroup>
+**Open firewall ports (if applicable):**
 
-### Step 3: Go live
+```bash
+# For mDNS discovery (Avahi)
+ufw allow 5353/udp
 
-<Accordion icon="rocket" title="Publish your docs">
-  1. Commit and push your changes.
-  2. Your docs will update and be live in moments!
-</Accordion>
+# For WiVRn streaming (TCP and UDP)
+ufw allow 9757
+```
+
+<Note>
+  The `ufw` commands above are for Ubuntu/Debian systems using UFW. If you use `firewalld`, `nftables`, or another firewall, open port 5353/UDP and port 9757 (both TCP and UDP) in the equivalent way for your setup.
+</Note>
+
+## Install the WiVRn server
+
+<Steps>
+  <Step title="Install via Flatpak from Flathub">
+    The Flatpak is the recommended install method if your distribution does not have a native package.
+
+    ```bash
+    flatpak install flathub io.github.wivrn.wivrn
+    ```
+
+    <Tip>
+      Native packages are available for Arch (AUR), Fedora, Gentoo (Guru), and NixOS — these are preferred over the Flatpak when available, as the Flatpak sandbox restricts some features (for example, Lighthouse-tracked devices).
+    </Tip>
+  </Step>
+
+  <Step title="Launch the WiVRn dashboard">
+    Run the dashboard from your application launcher by searching for **WiVRn**, or from a terminal:
+
+    ```bash
+    wivrn-dashboard
+    ```
+
+    The first time you launch it, a setup wizard will guide you through initial configuration.
+  </Step>
+</Steps>
+
+## Install the headset app
+
+<Steps>
+  <Step title="Follow the dashboard wizard">
+    The dashboard wizard will detect your headset type and direct you to the correct installation method.
+
+    - For **Meta Quest** headsets: the wizard links to the [Meta Store listing](https://www.meta.com/experiences/7959676140827574/). Install it from there like any other Meta Store app.
+    - For **Pico, HTC Vive, Samsung, and other Android headsets**: the wizard provides the correct APK download for your device. Sideload it using your headset's standard APK install method.
+  </Step>
+
+  <Step title="Open WiVRn on your headset">
+    Once installed, open WiVRn from your headset's app library.
+
+    On Meta Quest, if you installed from an APK rather than the Meta Store, look in the **Unknown Sources** section of your app library.
+  </Step>
+</Steps>
+
+## Connect your headset to the PC
+
+<Steps>
+  <Step title="Start the WiVRn server">
+    Open the WiVRn dashboard on your PC. The server starts automatically when the dashboard is running.
+  </Step>
+
+  <Step title="Select your PC on the headset">
+    In the WiVRn app on your headset, you will see your computer appear in the server list. Tap it to connect.
+
+    Once connected, the headset screen shows:
+
+    > Connection ready. Start a VR application on [your computer's name].
+  </Step>
+</Steps>
+
+<Warning>
+  If your PC does not appear in the headset's server list, check that Avahi is running and that port 5353/UDP is open. See [troubleshooting](/troubleshooting/common-issues) for more help.
+</Warning>
+
+## Launch a VR game
+
+### OpenXR games
+
+Any game or application that uses OpenXR will work immediately. Start it from your PC as normal while the headset is connected — the stream begins automatically.
+
+### Steam and OpenVR games
+
+Steam games that use OpenVR (rather than OpenXR) require a compatibility layer. WiVRn handles this automatically when a headset connects, but you may need to set launch options for some games:
+
+<Steps>
+  <Step title="Get the launch options from the dashboard">
+    The WiVRn dashboard will display the required launch options when a headset is connected and a Steam game needs them.
+  </Step>
+
+  <Step title="Set launch options in Steam">
+    1. Right-click the game in your Steam library and select **Properties**.
+    2. In the **General** tab, paste the launch options provided by the dashboard into the **Launch Options** field.
+  </Step>
+
+  <Step title="Launch the game">
+    Start the game from Steam. The OpenVR calls are translated to OpenXR automatically via xrizer or OpenComposite.
+  </Step>
+</Steps>
+
+<Note>
+  If you're using the **Steam Flatpak**, you need to grant it read access to WiVRn's runtime paths:
+
+  ```bash
+  flatpak override \
+    --filesystem=xdg-run/wivrn:ro \
+    --filesystem=xdg-data/flatpak/app/io.github.wivrn.wivrn:ro \
+    --filesystem=/var/lib/flatpak/app/io.github.wivrn.wivrn:ro \
+    --filesystem=xdg-config/openxr:ro \
+    --filesystem=xdg-config/openvr:ro \
+    com.valvesoftware.Steam
+  ```
+
+  If you installed Steam Flatpak as a user (not system-wide), add `--user` after `override`.
+</Note>
+
+## Tips for a better experience
+
+<Tip>
+  Use a **5 GHz WiFi connection** (WiFi 5 or WiFi 6) for the best streaming performance. The headset benefits from being on a less congested band with lower latency than 2.4 GHz.
+</Tip>
+
+<Tip>
+  You can configure WiVRn to **auto-launch a specific game** when your headset connects. Set this in the dashboard settings, or by adding an `application` entry to the [configuration file](/configuration/overview).
+</Tip>
+
+<Tip>
+  If you experience high latency or a pixelated image, try reducing the bitrate or resolution in the WiVRn app settings on the headset, or switch to software encoding as a test to isolate GPU encoder issues.
+</Tip>
 
 ## Next steps
 
-Now that you have your docs running, explore these key features:
-
 <CardGroup cols={2}>
-
-<Card title="Write Content" icon="pen-to-square" href="/essentials/markdown">
-  Learn MDX syntax and start writing your documentation.
-</Card>
-
-<Card title="Customize style" icon="palette" href="/essentials/settings">
-  Make your docs match your brand perfectly.
-</Card>
-
-<Card title="Add code examples" icon="square-code" href="/essentials/code">
-  Include syntax-highlighted code blocks.
-</Card>
-
-<Card title="API documentation" icon="code" href="/api-reference/introduction">
-  Auto-generate API docs from OpenAPI specs.
-</Card>
-
+  <Card title="Supported devices" icon="headset" href="/supported-devices">
+    Full list of compatible headsets and known limitations.
+  </Card>
+  <Card title="Configuration" icon="sliders" href="/configuration/overview">
+    Tune encoders, codecs, networking options, and more.
+  </Card>
+  <Card title="Audio setup" icon="volume" href="/usage/audio">
+    Enable audio output and microphone streaming from your headset.
+  </Card>
+  <Card title="Wired connection" icon="usb" href="/usage/wired-connection">
+    Use a USB cable instead of WiFi for a more stable connection.
+  </Card>
 </CardGroup>
-
-<Note>
-  **Need help?** See our [full documentation](https://mintlify.com/docs) or join our [community](https://mintlify.com/community).
-</Note>

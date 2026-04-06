@@ -1,0 +1,85 @@
+---
+title: "Supported devices"
+description: "A full list of VR headsets compatible with WiVRn, including known limitations and requirements."
+---
+
+WiVRn supports a wide range of standalone Android VR headsets. The table below lists all known devices and their compatibility status.
+
+## Headset compatibility
+
+| Headset | Status | Notes |
+|---|---|---|
+| Meta Quest 1 | Supported | |
+| Meta Quest 2 | Supported | |
+| Meta Quest 3 | Supported | |
+| Meta Quest 3s | Supported | |
+| Meta Quest Pro | Supported | |
+| Pico Neo 3 | Supported | |
+| Pico 4 | Supported | |
+| HTC Vive Focus 3 | Supported | Laggy — see note below |
+| HTC Vive XR Elite | Supported | Laggy — see note below |
+| Samsung Galaxy XR | Supported | |
+| Other Android VR | Unknown | Cannot be confirmed without testing |
+| Play for Dream | Not supported | See [issue #465](https://github.com/WiVRn/WiVRn/issues/465) |
+| Non-Android VR | Not supported | WiVRn requires Android |
+| Non-VR Android | Not supported | VR capability is required |
+
+<Note>
+  A Linux headset client exists, but it is intended for **debugging only**. It has no audio support and no hardware decoding. It is not suitable for playing games.
+</Note>
+
+## What "Laggy" means
+
+The HTC Vive Focus 3 and HTC Vive XR Elite are listed as **Laggy**. This means the devices connect and stream successfully, but users have reported noticeably higher motion-to-display latency compared to Meta Quest and Pico devices.
+
+This is a known issue and not caused by your network or PC configuration. It is related to how these headsets handle the decoded video stream internally.
+
+**Possible workarounds if you experience lag:**
+
+- Connect via USB instead of WiFi (see [wired connection](/usage/wired-connection)).
+- Reduce the streaming resolution in the WiVRn app settings on the headset.
+- Reduce the bitrate in the WiVRn app settings.
+- Try switching to a different codec (H.264 tends to have the widest decoder support and lowest overhead).
+- Reset all settings using the reset button at the bottom of the settings tab in the headset app.
+
+## Requirements for a supported device
+
+To work with WiVRn, a headset must meet all of the following:
+
+1. **Android-based** — WiVRn's headset client is an Android application. Headsets running non-Android operating systems (for example, PlayStation VR, non-Android standalone headsets) are not compatible.
+2. **VR-capable** — The device must be designed as a VR headset. Standard Android smartphones and tablets are not supported.
+3. **Same local network as the PC** — The headset and Linux PC must be on the same local network for mDNS discovery and streaming to work.
+
+## Headset app sources by device
+
+The correct installation source depends on your headset:
+
+| Headset | Install source |
+|---|---|
+| Meta Quest (all models) | [Meta Store](https://www.meta.com/experiences/7959676140827574/) or APK sideload |
+| Pico Neo 3, Pico 4 | APK sideload via dashboard wizard |
+| HTC Vive Focus 3, XR Elite | APK sideload via dashboard wizard |
+| Samsung Galaxy XR | APK sideload via dashboard wizard |
+
+The WiVRn dashboard wizard automatically detects your headset type and links to the correct source. Follow the wizard after installing the server.
+
+<Warning>
+  The headset app and PC server must be on the **same version** of WiVRn. Mismatched versions will prevent connection. Always install or update both at the same time.
+</Warning>
+
+## Other headsets
+
+If you have an Android-based VR headset not listed above, it may work with WiVRn — the compatibility is simply unknown without testing. You can try installing the APK from the [WiVRn GitHub releases](https://github.com/WiVRn/WiVRn/releases) page.
+
+If you test an unlisted headset, consider reporting your findings on the [GitHub issue tracker](https://github.com/WiVRn/WiVRn/issues) or in the community channels to help improve this list.
+
+## Community & support
+
+<CardGroup cols={2}>
+  <Card title="Discord" icon="discord" href="https://discord.gg/EHAYe3tTYa">
+    Join the LVRA Discord and find the `#wivrn` channel for help and discussion.
+  </Card>
+  <Card title="GitHub issues" icon="github" href="https://github.com/WiVRn/WiVRn/issues">
+    Report device compatibility findings or check existing reports.
+  </Card>
+</CardGroup>
